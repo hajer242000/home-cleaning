@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/instance_manager.dart';
 import 'package:homecleaning/Components/clip_path.dart';
 import 'package:homecleaning/Theme/app_theme.dart';
-
+import 'package:easy_localization/easy_localization.dart' as easy;
 class Onboarding extends StatefulWidget {
   const Onboarding({super.key});
 
@@ -97,15 +96,15 @@ class _OnboardingState extends State<Onboarding> {
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Let’s Find the',
+                                  text: easy.tr('lets_find_the'),
                                   style: TextStyle(color: Colors.black),
                                 ),
                                 TextSpan(
-                                  text: 'Professional Cleaning & Repair',
+                                  text: easy.tr('professional_cleaning_repair'),
                                   style: TextStyle(color: primaryColor),
                                 ),
                                 TextSpan(
-                                  text: 'Service',
+                                  text: easy.tr('service'),
                                   style: TextStyle(color: Colors.black),
                                 ),
                               ],
@@ -114,7 +113,7 @@ class _OnboardingState extends State<Onboarding> {
 
                           Text(
                             textAlign: TextAlign.center,
-                            'Lorem ipsum dolor sit amet, consectetur\nadipiscing elit, sed do eiusmod tempor incididunt ',
+                            easy.tr('lorem_description'),
                             style: TextStyle(
                               color: secondaryColor,
                               fontSize: 14,
@@ -227,7 +226,7 @@ class _OnboardingState extends State<Onboarding> {
                               Get.toNamed('/start');
                             },
                             child: Text(
-                              "Skip",
+                             easy.tr('skip'),
                               style: TextStyle(
                                 color: primaryColor,
                                 fontSize: 13.82,

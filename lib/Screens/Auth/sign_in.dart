@@ -1,9 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/instance_manager.dart';
 import 'package:homecleaning/Components/button.dart';
 import 'package:homecleaning/Components/text_form_field.dart';
 import 'package:homecleaning/Theme/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart' as easy;
+import 'package:homecleaning/controller_getx/app_controller.dart';
+import 'package:homecleaning/controller_getx/data_state_controller.dart';
+import 'package:homecleaning/core/api/dio_consumer.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -13,10 +17,11 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  GlobalKey<FormState> formKey = GlobalKey();
-  TextEditingController textEditingControllerEmail = TextEditingController();
-  TextEditingController textEditingControllerPassword = TextEditingController();
+  AppController appController = Get.put(
+    AppController(api: DioConsumer(dio: Dio())),
+  );
   bool obscureText = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,14 +29,14 @@ class _SignInState extends State<SignIn> {
         child: Padding(
           padding: EdgeInsetsGeometry.all(25),
           child: Form(
-            key: formKey,
+            key: appController.formKeySignIn,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Column(
                   children: [
                     Text(
-                      "Sign In",
+                      easy.tr("sign_in"),
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w500,
@@ -39,7 +44,7 @@ class _SignInState extends State<SignIn> {
                     ),
                     SizedBox(height: 15),
                     Text(
-                      "Hi! Welcome back, you’ve been missed ",
+                      easy.tr("welcome_back_message"),
                       style: TextStyle(
                         fontSize: 12,
                         color: secondaryColor,
@@ -52,7 +57,7 @@ class _SignInState extends State<SignIn> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Email",
+                      easy.tr("email"),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -60,16 +65,15 @@ class _SignInState extends State<SignIn> {
                     ),
                     SizedBox(height: 10),
                     AppTextFormField(
-                      controller: textEditingControllerEmail,
-
-                      hint: 'example@gmail.com',
+                      controller:
+                          appController.textEditingControllerUsernameSignIn,
+                      hint: 'Enter your username',
                       required: true,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.text,
                       suffixIcon: const Icon(null),
                       validator: (v) {
-                        // extra rule (simple pattern)
-                        if (v != null && !RegExp(r'.+@.+\..+').hasMatch(v)) {
-                          return 'Invalid email address';
+                        if (v != null && v.trim().isEmpty) {
+                          return easy.tr('username_required');
                         }
                         return null;
                       },
@@ -80,7 +84,7 @@ class _SignInState extends State<SignIn> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Password",
+                      easy.tr("password"),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -88,7 +92,8 @@ class _SignInState extends State<SignIn> {
                     ),
                     SizedBox(height: 10),
                     AppTextFormField(
-                      controller: textEditingControllerPassword,
+                      controller:
+                          appController.textEditingControllerPasswordSignIn,
 
                       hint: '********',
                       required: true,
@@ -108,9 +113,11 @@ class _SignInState extends State<SignIn> {
                         Get.toNamed('/verifyCode');
                       },
                       child: Align(
-                        alignment: Alignment.centerRight,
+                        alignment: context.locale.languageCode == 'ar'
+                            ? Alignment.centerLeft
+                            : Alignment.centerRight,
                         child: Text(
-                          'Forgot Password?',
+                          easy.tr('forgot_password'),
                           style: TextStyle(
                             fontSize: 12,
                             decoration: TextDecoration.underline,
@@ -123,19 +130,35 @@ class _SignInState extends State<SignIn> {
                     ),
                   ],
                 ),
-                InkWell(
-                  onTap: () {
-                    if (formKey.currentState!.validate()) {   Get.toNamed('/start');}
-                  },
-                  child: AppButton(title: 'Sign In'),
-                ),
+                Obx(() {
+                  final status = appController.dataState.value;
+                  if (status is SigninFailure) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Get.snackbar("Error", status.errorMessage);
+                    });
+                  }
+                  if (status is SigninLoading) {
+                    return Center(
+                      child: CircularProgressIndicator(color: primaryColor),
+                    );
+                  }
+                  return InkWell(
+                    onTap: () {
+                      if (appController.formKeySignIn.currentState!
+                          .validate()) {
+                        appController.signIn();
+                      }
+                    },
+                    child: AppButton(title: easy.tr('sign_in')),
+                  );
+                }),
 
                 Row(
                   children: [
                     Expanded(child: Divider()),
                     const SizedBox(width: 10),
                     Text(
-                      'Or sign in with',
+                      easy.tr('or_sign_in_with'),
                       style: TextStyle(
                         color: secondaryColor,
                         fontSize: 12,
@@ -201,14 +224,14 @@ class _SignInState extends State<SignIn> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Don’t have an account?',
+                        easy.tr('dont_have_account'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       Text(
-                        ' Sign Up',
+                        easy.tr('sign_up'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,

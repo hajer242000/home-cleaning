@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/instance_manager.dart';
 import 'package:homecleaning/Components/button.dart';
 import 'package:homecleaning/Components/leading_app_bar.dart';
 import 'package:homecleaning/Components/text_form_field.dart';

@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: handy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d handy"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  handy:
+    image: 96642427/handy:latest   # <-- must be lower-case
+    container_name: handy
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: aDevelopment
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=handy;Username=postgres;Password=postgres"
+      ASPNETCORE_URLS: "http://+:6000"
+    ports:
+      - "6000:6000"
+      - "6001:6001"
+    command: "dotnet handy.dll"
+    pull_policy: always                  # Compose v2+, auto-pull latest tag
+
+volumes:
+  postgres_data:

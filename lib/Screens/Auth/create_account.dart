@@ -1,9 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/state_manager.dart';
 import 'package:homecleaning/Components/button.dart';
 import 'package:homecleaning/Components/text_form_field.dart';
 import 'package:homecleaning/Theme/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart' as easy;
+import 'package:homecleaning/controller_getx/app_controller.dart';
+import 'package:homecleaning/controller_getx/data_state_controller.dart';
+import 'package:homecleaning/core/api/dio_consumer.dart';
 
 class CreateAccount extends StatefulWidget {
   const CreateAccount({super.key});
@@ -13,10 +17,9 @@ class CreateAccount extends StatefulWidget {
 }
 
 class _CreateAccountState extends State<CreateAccount> {
-  GlobalKey<FormState> globalKey = GlobalKey();
-  TextEditingController textEditingControllerName = TextEditingController();
-  TextEditingController textEditingControllerEmail = TextEditingController();
-  TextEditingController textEditingControllerPassword = TextEditingController();
+  AppController appController = Get.put(
+    AppController(api: DioConsumer(dio: Dio())),
+  );
   bool obscureText = true;
   bool checkbox = false;
   @override
@@ -31,13 +34,13 @@ class _CreateAccountState extends State<CreateAccount> {
               Column(
                 children: [
                   Text(
-                    "Create Account",
+                    easy.tr("create_account"),
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                   ),
                   SizedBox(height: 15),
                   Text(
                     textAlign: TextAlign.center,
-                    "Fill your information below or register\nwith your social account.",
+                    easy.tr("fill_info_or_register"),
                     style: TextStyle(
                       fontSize: 12,
                       color: secondaryColor,
@@ -46,43 +49,51 @@ class _CreateAccountState extends State<CreateAccount> {
                   ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Name",
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-                  ),
-                  SizedBox(height: 10),
-                  AppTextFormField(
-                    controller: textEditingControllerName,
+              Form(
+                key: appController.globalKeyRegister,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      easy.tr("name"),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    AppTextFormField(
+                      controller:
+                          appController.textEditingControllerNameRegister,
 
-                    hint: 'Enter your full name',
-                    required: true,
-                    minLength: 3,
-                    maxLength: 50,
-                    keyboardType: TextInputType.name,
-                    obscureText: false,
-                    suffixIcon: const Icon(null),
-                    validator: (value) {
-                      if (value != null && value.contains(RegExp(r'[0-9]'))) {
-                        return 'Name cannot contain numbers';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
+                      hint: easy.tr('enter_full_name'),
+                      required: true,
+                      minLength: 3,
+                      maxLength: 50,
+                      keyboardType: TextInputType.name,
+                      obscureText: false,
+                      suffixIcon: const Icon(null),
+                      validator: (value) {
+                        if (value != null && value.contains(RegExp(r'[0-9]'))) {
+                          return easy.tr('name_cannot_contain_numbers');
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Email",
+                    easy.tr('email'),
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
                   ),
                   SizedBox(height: 10),
                   AppTextFormField(
-                    controller: textEditingControllerEmail,
+                    controller:
+                        appController.textEditingControllerEmailRegister,
 
                     hint: 'example@gmail.com',
                     required: true,
@@ -91,7 +102,7 @@ class _CreateAccountState extends State<CreateAccount> {
                     validator: (v) {
                       // extra rule (simple pattern)
                       if (v != null && !RegExp(r'.+@.+\..+').hasMatch(v)) {
-                        return 'Invalid email address';
+                        return easy.tr('invalid_email');
                       }
                       return null;
                     },
@@ -102,12 +113,13 @@ class _CreateAccountState extends State<CreateAccount> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Password",
+                    easy.tr("password"),
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
                   ),
                   SizedBox(height: 10),
                   AppTextFormField(
-                    controller: textEditingControllerPassword,
+                    controller:
+                        appController.textEditingControllerPasswordRegister,
 
                     hint: '********',
                     required: true,
@@ -142,11 +154,11 @@ class _CreateAccountState extends State<CreateAccount> {
                           ),
                           children: [
                             TextSpan(
-                              text: "Agree with  ",
+                              text: easy.tr('agree_with'),
                               style: TextStyle(color: Colors.black),
                             ),
                             TextSpan(
-                              text: "Terms & Condition",
+                              text: easy.tr("terms_and_conditions"),
                               style: TextStyle(color: primaryColor),
                             ),
                           ],
@@ -156,17 +168,33 @@ class _CreateAccountState extends State<CreateAccount> {
                   ),
                 ],
               ),
-              InkWell(onTap: () {
-                   Get.toNamed('/completeProfile');
-              },
-                child: AppButton(title: 'Sign Up')),
-
+              Obx(() {
+                var status = appController.dataState.value;
+                if (status is SignupFailure) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Get.snackbar("Error", status.errorMessage);
+                  });
+                }
+                if (status is SignupLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(color: primaryColor),
+                  );
+                }
+                return InkWell(
+                  onTap: () {
+                    if (appController.globalKeyRegister.currentState!.validate()) {
+                      appController.register();
+                    }
+                  },
+                  child: AppButton(title: easy.tr('sign_up')),
+                );
+              }),
               Row(
                 children: [
                   Expanded(child: Divider()),
                   const SizedBox(width: 10),
                   Text(
-                    'Or sign up with',
+                    easy.tr('or_sign_up_with'),
                     style: TextStyle(
                       color: secondaryColor,
                       fontSize: 12,
@@ -232,14 +260,14 @@ class _CreateAccountState extends State<CreateAccount> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already  have an account? ',
+                      easy.tr('already_have_account'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
                     Text(
-                      'Sign In',
+                      easy.tr('sign_in'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,

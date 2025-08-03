@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/instance_manager.dart';
 import 'package:homecleaning/Components/button.dart';
 import 'package:homecleaning/Components/clip_path.dart';
 import 'package:homecleaning/Theme/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart' as easy;
 
 class Welcome extends StatelessWidget {
   const Welcome({super.key});
@@ -37,15 +37,15 @@ class Welcome extends StatelessWidget {
                       ),
                       children: [
                         TextSpan(
-                          text: 'Let’s Find the',
+                          text: "${easy.tr('lets_find_the')}\t",
                           style: TextStyle(color: Colors.black),
                         ),
                         TextSpan(
-                          text: 'Professional Cleaning & Repair',
+                          text: easy.tr('professional_cleaning_repair'),
                           style: TextStyle(color: primaryColor),
                         ),
                         TextSpan(
-                          text: 'Service',
+                          text: "\t${easy.tr('service')}",
                           style: TextStyle(color: Colors.black),
                         ),
                       ],
@@ -54,7 +54,7 @@ class Welcome extends StatelessWidget {
 
                   Text(
                     textAlign: TextAlign.center,
-                    'Lorem ipsum dolor sit amet, consectetur\nadipiscing elit, sed do eiusmod tempor incididunt ',
+                 easy.tr('lorem_description'),
                     style: TextStyle(
                       color: secondaryColor,
                       fontSize: 14,
@@ -67,7 +67,7 @@ class Welcome extends StatelessWidget {
                       onTap: () {
                         Get.toNamed('/onboarding');
                       },
-                      child: AppButton(title: 'Let’s Get Started'),
+                      child: AppButton(title: easy.tr('lets_get_started')),
                     ),
                   ),
 
@@ -79,14 +79,14 @@ class Welcome extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Already have an account? ',
+                         easy.tr('already_have_account'),
                           style: TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          'Sign In',
+                        "\t${ easy.tr( 'sign_in')}",
                           style: TextStyle(
                             decoration: TextDecoration.underline,
                             decorationColor: Color(0xff01AC66),
