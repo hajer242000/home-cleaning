@@ -17,6 +17,7 @@ import 'package:homecleaning/Theme/app_theme.dart';
 import 'package:homecleaning/controller_getx/app_controller.dart';
 import 'package:homecleaning/core/api/dio_consumer.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
